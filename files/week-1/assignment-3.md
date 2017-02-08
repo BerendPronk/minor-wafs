@@ -17,6 +17,7 @@ The page will automatically (if requested) load in new data via AJAX.
 ***It decreases bounce-rates compared to other websites***  
 Because there is not a lot to do on single-page applications, users are more likely to interact with all of the visible content. 
 
+---
 
 ####Con's
 ***Single-page applications tend to be slower on the landing***  
