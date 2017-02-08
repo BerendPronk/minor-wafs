@@ -25,7 +25,7 @@ All the big libraries and frameworks come without costs. Because you save time w
 ***They bring a new perspective on code-development***  
 Each library / framwork uses it's own syntax. When you are learning a new library or framework, you take a look a JavaScript from a different perspective than you are used to. This could help in getting to know JavaScript a bit better.
 
-
+---
 
 ####Con's
 ***The learning curve could be steep***  
