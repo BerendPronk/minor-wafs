@@ -1,5 +1,3 @@
-## Week 1
-
 ## Assignment 2  
 07-02-2017
 
