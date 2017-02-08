@@ -82,211 +82,217 @@
 
 	var ET = new EventTarget();
 
-	// Test of GPS beschikbaar is (via geo.js) en vuur een event af
-	function init() {
-		debug_message("Controleer of GPS beschikbaar is...");
+	var geo = {
+		// Test of GPS beschikbaar is (via geo.js) en vuur een event af
+		init: function () {
+			debugMessage("Controleer of GPS beschikbaar is...");
 
-		ET.addListener(gpsAvailable, _start_interval);
-		ET.addListener(gpsUnavailable, function() {
-			debug_message("GPS is niet beschikbaar.");
-		});
+			ET.addListener(gpsAvailable, _startInterval);
+			ET.addListener(gpsUnavailable, function() {
+				debugMessage("GPS is niet beschikbaar.");
+			});
 
-		if (geo_position_js.init()) {
-			ET.fire(gpsAvailable);
-		} else {
-			ET.fire(gpsUnavailable);
-		}
-	}
+			if (geo_position_js.init()) {
+				ET.fire(gpsAvailable);
+			} else {
+				ET.fire(gpsUnavailable);
+			}
+		},
 
-	init();
+		init();
 
-	// Start een interval welke op basis van refreshRate de positie updated
-	function _start_interval(event) {
-		debug_message("GPS is beschikbaar, vraag positie.");
+		// Start een interval welke op basis van refreshRate de positie updated
+		_startInterval: function (event) {
+			debugMessage("GPS is beschikbaar, vraag positie.");
 
-		_update_position();
+			_updatePosition();
 
-		interval = this.setInterval(_update_position, refreshRate);
+			interval = this.setInterval(_updatePosition, refreshRate);
 
-		ET.addListener(positionUpdated, _check_locations);
-	}
+			ET.addListener(positionUpdated, _checkLocations);
+		},
 
-	// Vraag de huidige positie aan geo.js, stel een callback in voor het resultaat
-	function _update_position() {
-		intervalCounter++;
+		// Vraag de huidige positie aan geo.js, stel een callback in voor het resultaat
+		_updatePosition: function () {
+			intervalCounter++;
 
-		geo_position_js.getCurrentPosition(_set_position, _geo_error_handler, {
-			enableHighAccuracy: true
-		});
-	}
+			geo_position_js.getCurrentPosition(_setPosition, _geoErrorHandler, {
+				enableHighAccuracy: true
+			});
+		},
 
-	// Callback functie voor het instellen van de huidige positie, vuurt een event af
-	function _set_position(position) {
-		currentPosition = position;
-		ET.fire(positionUpdated);
-		debug_message(intervalCounter + " positie lat:" + position.coords.latitude + " long:" + position.coords.longitude);
-	}
+		// Callback functie voor het instellen van de huidige positie, vuurt een event af
+		_setPosition: function (position) {
+			currentPosition = position;
+			ET.fire(positionUpdated);
+			debugMessage(intervalCounter + " positie lat:" + position.coords.latitude + " long:" + position.coords.longitude);
+		},
 
-	// Controleer de locaties en verwijs naar een andere pagina als we op een locatie zijn
-	function _check_locations(event) {
+		// Controleer de locaties en verwijs naar een andere pagina als we op een locatie zijn
+		_checkLocations: function (event) {
 
-		// Liefst buiten google maps om... maar helaas, ze hebben alle coole functies
-		for (var i = 0; i < locationArray.length; i++) {
-			var locatie = {
-				coords: {
-					latitude: locationArray[i][3],
-					longitude: locationArray[i][4]
-				}
-			};
-
-			if (_calculate_distance(locatie, currentPosition) < locationArray[i][2]) {
-
-				// Controle of we NU op die locatie zijn, zo niet gaan we naar de betreffende page
-				if (window.location != locationArray[i][1] && localStorage[locationArray[i][0]] == "false") {
-
-					// Probeer local storage, als die bestaat incrementeer de locatie
-					try {
-
-						if (localStorage[locationArray[i][0]] == "false") {
-							localStorage[locationArray[i][0]] = 1;
-						} else {
-							localStorage[locationArray[i][0]]++;
-						}
-					} catch (error) {
-						debug_message("Localstorage kan niet aangesproken worden: " + error);
+			// Liefst buiten google maps om... maar helaas, ze hebben alle coole functies
+			for (var i = 0; i < locationArray.length; i++) {
+				var locatie = {
+					coords: {
+						latitude: locationArray[i][3],
+						longitude: locationArray[i][4]
 					}
+				};
 
-					// TODO: Animeer de betreffende marker
-					window.location = locationArray[i][1];
-					debug_message("Speler is binnen een straal van " +  locationArray[i][2] + " meter van " + locationArray[i][0]);
+				if (_calculateDistance(locatie, currentPosition) < locationArray[i][2]) {
+
+					// Controle of we NU op die locatie zijn, zo niet gaan we naar de betreffende page
+					if (window.location != locationArray[i][1] && localStorage[locationArray[i][0]] == "false") {
+
+						// Probeer local storage, als die bestaat incrementeer de locatie
+						try {
+
+							if (localStorage[locationArray[i][0]] == "false") {
+								localStorage[locationArray[i][0]] = 1;
+							} else {
+								localStorage[locationArray[i][0]]++;
+							}
+						} catch (error) {
+							debugMessage("Localstorage kan niet aangesproken worden: " + error);
+						}
+
+						// TODO: Animeer de betreffende marker
+						window.location = locationArray[i][1];
+						debugMessage("Speler is binnen een straal van " +  locationArray[i][2] + " meter van " + locationArray[i][0]);
+					}
 				}
 			}
-		}
-	}
+		},
 
-	// Bereken het verchil in meters tussen twee punten
-	function _calculate_distance(p1, p2) {
-		var pos1 = new google.maps.LatLng(p1.coords.latitude, p1.coords.longitude);
-		var pos2 = new google.maps.LatLng(p2.coords.latitude, p2.coords.longitude);
-		return Math.round(google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2), 0);
-	}
+		// Bereken het verchil in meters tussen twee punten
+		_calculateDistance: function (p1, p2) {
+			var pos1 = new google.maps.LatLng(p1.coords.latitude, p1.coords.longitude);
+			var pos2 = new google.maps.LatLng(p2.coords.latitude, p2.coords.longitude);
+			return Math.round(google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2), 0);
+		},
 
 
-	// GOOGLE MAPS FUNCTIES
-	/**
-	 * generate_map(myOptions, canvasId)
-	 *  roept op basis van meegegeven opties de google maps API aan
-	 *  om een kaart te genereren en plaatst deze in het HTML element
-	 *  wat aangeduid wordt door het meegegeven id.
-	 *
-	 *  @param myOptions:object - een object met in te stellen opties
-	 *      voor de aanroep van de google maps API, kijk voor een over-
-	 *      zicht van mogelijke opties op http://
-	 *  @param canvasID:string - het id van het HTML element waar de
-	 *      kaart in ge-rendered moet worden, <div> of <canvas>
-	 */
-	function generate_map(myOptions, canvasId) {
+		// GOOGLE MAPS FUNCTIES
+		/**
+		 * generate_map(myOptions, canvasId)
+		 *  roept op basis van meegegeven opties de google maps API aan
+		 *  om een kaart te genereren en plaatst deze in het HTML element
+		 *  wat aangeduid wordt door het meegegeven id.
+		 *
+		 *  @param myOptions:object - een object met in te stellen opties
+		 *      voor de aanroep van de google maps API, kijk voor een over-
+		 *      zicht van mogelijke opties op http://
+		 *  @param canvasID:string - het id van het HTML element waar de
+		 *      kaart in ge-rendered moet worden, <div> of <canvas>
+		 */
+		generateMap: function (myOptions, canvasId) {
 
-		// TODO: Kan ik hier asynchroon nog de google maps api aanroepen? dit scheelt calls
-		debug_message("Genereer een Google Maps kaart en toon deze in #" + canvasId);
-		map = new google.maps.Map(document.getElementById(canvasId), myOptions);
+			// TODO: Kan ik hier asynchroon nog de google maps api aanroepen? dit scheelt calls
+			debugMessage("Genereer een Google Maps kaart en toon deze in #" + canvasId);
+			map = new google.maps.Map(document.getElementById(canvasId), myOptions);
 
-		var routeList = [];
+			var routeList = [];
 
-		// Voeg de markers toe aan de map afhankelijk van het tourtype
-		debug_message("Locaties intekenen, tourtype is: " + tourType);
+			// Voeg de markers toe aan de map afhankelijk van het tourtype
+			debugMessage("Locaties intekenen, tourtype is: " + tourType);
 
-		for (var i = 0; i < locationArray.length; i++) {
+			for (var i = 0; i < locationArray.length; i++) {
 
-			// Met kudos aan Tomas Harkema, probeer local storage, als het bestaat, voeg de locaties toe
-			try {
+				// Met kudos aan Tomas Harkema, probeer local storage, als het bestaat, voeg de locaties toe
+				try {
 
-				if (localStorage.visited === undefined || isNumber(localStorage.visited)) {
-					localStorage[locationArray[i][0]] = false;
-				} else {
-					return null;
+					if (localStorage.visited === undefined || isNumber(localStorage.visited)) {
+						localStorage[locationArray[i][0]] = false;
+					} else {
+						return null;
+					}
+				} catch (error) {
+					debugMessage("Localstorage kan niet aangesproken worden: " + error);
 				}
-			} catch (error) {
-				debug_message("Localstorage kan niet aangesproken worden: " + error);
+
+				var markerLatLng = new google.maps.LatLng(locationArray[i][3], locationArray[i][4]);
+				routeList.push(markerLatLng);
+
+				markerArray[i] = {};
+
+				for (var attr in locatieMarker) {
+					markerArray[i][attr] = locatieMarker[attr];
+				}
+
+				markerArray[i].scale = locationArray[i][2] / 3;
+
+				var marker = new google.maps.Marker({
+					position: markerLatLng,
+					map: map,
+					icon: markerArray[i],
+					title: locationArray[i][0]
+				});
 			}
 
-			var markerLatLng = new google.maps.LatLng(locationArray[i][3], locationArray[i][4]);
-			routeList.push(markerLatLng);
+			// TODO: Kleur aanpassen op het huidige punt van de tour
+			if (tourType == linear) {
 
-			markerArray[i] = {};
+				// Trek lijnen tussen de punten
+				debugMessage("Route intekenen");
 
-			for (var attr in locatieMarker) {
-				markerArray[i][attr] = locatieMarker[attr];
+				var route = new google.maps.Polyline({
+					clickable: false,
+					map: map,
+					path: routeList,
+					strokeColor: "Black",
+					strokeOpacity: 0.6,
+					strokeWeight: 3
+				});
 			}
 
-			markerArray[i].scale = locationArray[i][2] / 3;
-
-			var marker = new google.maps.Marker({
-				position: markerLatLng,
+			// Voeg de locatie van de persoon door
+			currentPositionMarker = new google.maps.Marker({
+				position: kaartOpties.center,
 				map: map,
-				icon: markerArray[i],
-				title: locationArray[i][0]
+				icon: positionMarker,
+				title: "U bevindt zich hier"
 			});
+
+			// Zorg dat de kaart geupdated wordt als het positionUpdated event afgevuurd wordt
+			ET.addListener(positionUpdated, updatePosition);
+		},
+
+
+		// Update de positie van de gebruiker op de kaart
+		updatePosition: function (event) {
+
+			// use currentPosition to center the map
+			var newPos = new google.maps.LatLng(currentPosition.coords.latitude, currentPosition.coords.longitude);
+
+			map.setCenter(newPos);
+			currentPositionMarker.setPosition(newPos);
 		}
-
-		// TODO: Kleur aanpassen op het huidige punt van de tour
-		if (tourType == linear) {
-
-			// Trek lijnen tussen de punten
-			debug_message("Route intekenen");
-
-			var route = new google.maps.Polyline({
-				clickable: false,
-				map: map,
-				path: routeList,
-				strokeColor: "Black",
-				strokeOpacity: 0.6,
-				strokeWeight: 3
-			});
-		}
-
-		// Voeg de locatie van de persoon door
-		currentPositionMarker = new google.maps.Marker({
-			position: kaartOpties.center,
-			map: map,
-			icon: positionMarker,
-			title: "U bevindt zich hier"
-		});
-
-		// Zorg dat de kaart geupdated wordt als het positionUpdated event afgevuurd wordt
-		ET.addListener(positionUpdated, update_positie);
-	}
+	};
 
 	function isNumber(n) {
 		return !isNaN(parseFloat(n)) && isFinite(n);
 	}
 
-	// Update de positie van de gebruiker op de kaart
-	function update_positie(event) {
-
-		// use currentPosition to center the map
-		var newPos = new google.maps.LatLng(currentPosition.coords.latitude, currentPosition.coords.longitude);
-
-		map.setCenter(newPos);
-		currentPositionMarker.setPosition(newPos);
-	}
-
 	// FUNCTIES VOOR DEBUGGING
-	function _geo_error_handler(code, message) {
-		debug_message("geo.js error " + code + ": " + message);
-	}
+	var debug = {
 
-	function debug_message(message) {
-		if (customDebugging && debugId) {
-			return document.getElementById(debugId).innerHTML;
-		} else {
-			console.log(message);
+		_geoErrorHandler: function(code, message) {
+			debugMessage("geo.js error " + code + ": " + message);
+		},
+
+		debugMessage: function(message) {
+			if (customDebugging && debugId) {
+				return document.getElementById(debugId).innerHTML;
+			} else {
+				console.log(message);
+			}
+		},
+
+		setCustomDebugging: function(debugId) {
+			debugId = this.debugId;
+			customDebugging = true;
 		}
-	}
-
-	function set_custom_debugging(debugId) {
-		debugId = this.debugId;
-		customDebugging = true;
-	}
+	};
 
 }) ();
