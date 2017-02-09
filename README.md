@@ -13,3 +13,6 @@ https://github.com/BerendPronk/minor-wafs/blob/master/files/week-1/assignment-3.
 
 ***Assignment 4***  
 https://github.com/BerendPronk/minor-wafs/blob/master/files/week-1/assignment-4/cmdgeo-0.1.js
+
+***Assignment 5***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-1/assignment-5  
