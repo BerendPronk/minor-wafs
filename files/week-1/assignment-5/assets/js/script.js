@@ -1,5 +1,6 @@
-// (function () {
-	'use strict';
+'use strict';
+
+(function () {
 
 	// restore set hash on refresh
 	history.pushState("", document.title, window.location.pathname);
@@ -7,16 +8,15 @@
 	var app = {
 		init: function() {
 			routes.init();
+			sections.toggle('#intro');
 		}
 	};
 
 	var routes = {
 		init: function() {
+
 			window.addEventListener('hashchange', function() {
-
-				var route = window.location.hash;
-
-				sections.toggle(route);
+				sections.toggle(window.location.hash);
 			});
 		}
 	};
@@ -25,8 +25,6 @@
 		list: document.querySelectorAll('.content'),
 
 		toggle: function(hash) {
-			var link = document.querySelector(hash);
-
 			this.list.forEach( function(section) {
 				if ('#' + section.id == hash) {
 					section.classList.remove('hidden');
@@ -50,4 +48,4 @@
 
 	app.init();
 
-// }) ();
+}) ();
