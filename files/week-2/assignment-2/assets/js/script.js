@@ -15,8 +15,16 @@
 			// toggle intro section on page entry
 			sections.toggle('#intro');
 
-			window.addEventListener('hashchange', function() {
-				sections.toggle(window.location.hash);
+			routie({
+				'intro': function() {
+					sections.toggle('#intro');
+				},
+				'results': function() {
+					sections.toggle('#results');
+				},
+				'details': function() {
+					sections.toggle('#details');
+				}
 			});
 		}
 	};
