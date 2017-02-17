@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>WAFS - Week 2: Assignment 1</title>
+
+	<link href="https://fonts.googleapis.com/css?family=Abel|Montserrat:700" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+<body>
+
+	<header>
+		<h1>Stiphy</h1>
+		<h2>Stories supported by the Giphy API</h2>
+	</header>
+
+	<article>
+		<ul id="story"></ul>
+	</article>
+
+	<p class="hint">Search for animated images and make a story by clicking your favourites in consecutive order.</p>
+
+	<form id="search">
+		<input type="search" placeholder="Randomize your thougts" autofocus>
+
+		<input type="submit" value="Search">
+	</form>
+
+	<p id="feedback"></p>
+
+	<ul id="results"></ul>
+
+	<script src="node_modules/aja/aja.min.js"></script>
+	<script src="assets/js/script.js"></script>
+</body>
+</html>
