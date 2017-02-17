@@ -19,3 +19,19 @@ https://github.com/BerendPronk/minor-wafs/blob/master/files/week-1/assignment-4/
 
 ***Assignment 5***  
 https://github.com/BerendPronk/minor-wafs/tree/master/files/week-1/assignment-5  
+
+---
+
+##Week 2
+
+***Assignment 1***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-1
+
+***Assignment 2***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-2
+
+***Assignment 3***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-3
+
+***Assignment 4***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-4
