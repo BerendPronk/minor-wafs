@@ -104,7 +104,7 @@ var gifs = {
 		})
 			.then(function(rawInput) {
 				// results.
-				console.log(rawInpu4t)
+				console.log(rawInput)
 			})
 			.catch(function(err) {
 				console.error('Unfortunately, an error occurred: ', err.status);
