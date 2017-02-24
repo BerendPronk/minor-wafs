@@ -390,9 +390,7 @@
 			},
 			{
 				template: 'detail',
-				title: 'Found synonyms',
-				content: 'Mauris turpis nunc, blandit et, volutpat molestie, porta ut, ligula. Fusce pharetra convallis urna. Quisque ut nisi.',
-				image: 'http://placecage.com/c/550/440'
+				title: 'Found synonyms'
 			}
 		],
 		render: function(pagelist) {
