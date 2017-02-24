@@ -1,8 +1,4 @@
 (function() {
-
-	var colors  = ['#00ff99', '#fff35c', '#ff6666', '#00ccff', '7d7fe8#'];
-	var title	= document.querySelector('h1');
-
 	var results  = document.querySelector('#results');
 	var story	 = document.querySelector('#story');
 
@@ -10,15 +6,8 @@
 	var submit 	 = document.querySelector('#search input[type="submit"]');
 	var feedback = document.querySelector('#feedback');
 
+	// will store a new list-item for every new giphy requested
 	var newLi;
-
-	// cycle through giphy theme colours
-	setInterval(function() {
-		var random = Math.floor(Math.random() * 5);
-
-		title.style.color = colors[random];
-		submit.style.backgroundColor = colors[random];
-	}, 2500);
 
 	// clears an ul / ol
 	var clearList = function(list) {
