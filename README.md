@@ -2,7 +2,7 @@
 A repository that contains every file and document I used in the course 'Web-App From Scratch', from the HVA-minor 'Web Development'
 
 ###Portfolio  
-https://berendpronk.github.io/minor/
+https://berendpronk.github.io/minor/wafs/
 
 ---
 
