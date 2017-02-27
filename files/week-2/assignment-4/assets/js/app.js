@@ -13,48 +13,92 @@
 	};
 
 	var app = {
+		pages: ['send', 'stories', 'detail'],
 
 		init: function() {
-			var pages = ['send', 'stories', 'detail'];
+			template.render(app.pages);
+			router.init(app.pages);
+			renderMenu(app.pages);
+			app.cache();
+		},
 
-			template.render(pages);
-			router.init('hash', pages);
-			menu.render(pages);
+		cache: function() {
+			// Checks on existing stories
+			if (localStorage.stories) {
+				// Splits stories-string in an array on every element
+				var savedStories = localStorage.getItem('stories').split('><');
+				var gifs;
+
+				// Removes 'No stories found' feedback and shows filter
+				story.exists(true);
+
+				// i'm not proud of it.
+				for (var i = 0; i < savedStories.length; i++) {
+					if (i == 0) {
+						savedStories[i] = savedStories[i] + '>';
+					} else if (i == savedStories.length - 1) {
+						savedStories[i] = '<' + savedStories[i];
+					} else {
+						savedStories[i] = '<' + savedStories[i] + '>';
+					}
+				}
+
+				// Reconstructs stories in the result list
+				savedStories.reduce(function(a, b) {
+					return dom.results.innerHTML = a + b;
+				});
+
+				// Adds functionality to every gif
+				gifs = utils.convertToArray(document.querySelectorAll('.gif'));
+				gifs.map(function(gif) {
+					gif.addEventListener('click', function() {
+						story.showDetails(gif.querySelector('.label').textContent);
+					});
+					gif.addEventListener('mouseover', function() {
+						story.showLink(gif.querySelector('img').src);
+					});
+				})
+
+				router.navigate('stories');
+
+				// Refreshes filter on entry
+				story.filter(false);
+			} else {
+				// Shows 'No stories found' feedback and hides filter
+				story.exists(false);
+			}
 		}
 	};
 
-	var request = {
-		trigger: function(settings) {
-			return new Promise(function(resolve, reject) {
-				var req = new XMLHttpRequest();
+	var request = function(settings) {
+		return new Promise(function(resolve, reject) {
+			var req = new XMLHttpRequest();
 
-				req.open(settings.type, settings.url);
+			req.open(settings.type, settings.url);
 
-				req.addEventListener('load', function() {
-					if (this.status >= 200 && this.status < 400) {
-						resolve(this.responseText);
-					} else {
-						reject({
-							status: this.status,
-							statusText: this.statusText
-						});
-					}
-				});
-
-				req.addEventListener('error', function() {
+			req.addEventListener('load', function() {
+				if (this.status >= 200 && this.status < 400) {
+					resolve(this.responseText);
+				} else {
 					reject({
 						status: this.status,
 						statusText: this.statusText
 					});
-				});
-
-				req.send();
+				}
 			});
-		}
+
+			req.addEventListener('error', function() {
+				reject({
+					status: this.status,
+					statusText: this.statusText
+				});
+			});
+
+			req.send();
+		});
 	};
 
 	var story = {
-
 		init: function(input) {
 			var dataSet = JSON.parse(input);
 
@@ -89,7 +133,7 @@
 			story.exists(true);
 
 			// Sends 'POST' request to the Paralleldots keyword API
-			request.trigger({
+			request({
 				type: 'POST',
 				url:  'http://apis.paralleldots.com/keywords?q=' + dom.input.value + '&apikey=pIklELbRNqSO5ZUZCp8LclScsAaRw3dcKCp67xRsnJI'
 			})
@@ -179,7 +223,7 @@
 					}, 1000);
 				})
 				.catch(function(err) {
-					console.error('Unfortunately, an error occurred: ', err.status);
+					console.error('Unfortunately, an error occurred: ', err);
 				});
 		},
 
@@ -204,7 +248,7 @@
 				// Checks if word exists in the taglist
 				if (utils.checkArray(word, tagList) != -1) {
 					// Sends 'GET' request to the Giphy API
-					request.trigger({
+					request({
 						type: 'GET',
 						url:  'http://api.giphy.com/v1/gifs/search?q=' + word + '&api_key=dc6zaTOxFJmzC'
 					})
@@ -226,7 +270,7 @@
 							story.list.push(newLi);
 						})
 						.catch(function(err) {
-							console.error('Unfortunately, an error occurred: ', err.status);
+							console.error('Unfortunately, an error occurred: ', err);
 						});
 
 					// Removes used tag from taglist
@@ -290,7 +334,7 @@
 			dom.synonymTitle.innerHTML = 'Found synonyms for <span class="tag">' + word + '</span>';
 
 			// Sends 'GET' reuest to Yandex Dictionary API
-			request.trigger({
+			request({
 				type: 'GET',
 				url: 'https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=dict.1.1.20170223T233030Z.71899a3fb947bc19.e4fcdcdd9ae99bf36ee480c684992b301afacc9f&lang=en-en&text=' + wordID
 			})
@@ -311,7 +355,7 @@
 									var tag = synWord.text;
 
 									// Sends 'GET' request to Gihpy API for each synonym
-									request.trigger({
+									request({
 										type: 'GET',
 										url:  'http://api.giphy.com/v1/gifs/search?q=' + tag + '&api_key=dc6zaTOxFJmzC'
 									})
@@ -336,7 +380,7 @@
 											dom.synonyms.appendChild(newLi);
 										})
 										.catch(function(err) {
-											console.error('Unfortunately, an error occurred: ', err.status);
+											console.error('Unfortunately, an error occurred: ', err);
 										});
 								});
 							}
@@ -358,7 +402,7 @@
 					}
 				})
 				.catch(function(err) {
-					console.error('Unfortunately, and error occurred: ', err.status);
+					console.error('Unfortunately, and error occurred: ', err);
 				})
 		},
 
@@ -375,7 +419,7 @@
 			Source: Tutorial for native Javasript templating
 			URL: http://codoki.com/2015/09/01/native-javascript-templating/
 		*/
-		array: [
+		data: [
 			{
 				template: 'send',
 				hint: 'Enter your story and see it come to life!',
@@ -393,14 +437,13 @@
 				title: 'Found synonyms'
 			}
 		],
-		render: function(pagelist) {
 
-			template.array.map(function(page) {
+		render: function(pagelist) {
+			template.data.map(function(page) {
 				var section = document.querySelector('#' + page.template);
 				section.classList.add('content');
 
 				switch (page.template) {
-
 					case 'send':
 						section.querySelector('.hint').textContent = page.hint;
 						section.querySelector('textarea').placeholder = page.placeholder;
@@ -427,222 +470,79 @@
 
 	// Routing
 	var router = {
-		pages: {
-			toggle: function(hash) {
-				var list = utils.convertToArray(document.querySelectorAll('.content'));
-
-				list.map(function(section) {
-					// Ternary if-else to remove hidden classname if statement returns true
-					'#' + section.id == hash ? section.classList.remove('hidden') : section.classList.add('hidden');
-				});
-			}
-		},
-
-		/*
-			Source: Tutorial for native Javasript routing
-			Author: Krasimir Tsonev
-			URL: http://krasimirtsonev.com/blog/article/A-modern-JavaScript-router-in-100-lines-history-api-pushState-hash-url
-		*/
-		routes: [],
-
-		mode: null,
-
-		root: '/',
-
-		init: function(routingmode, pagelist) {
-
-			// Configuration
-			router.config({
-				mode: routingmode // Hash or history
-			});
-
-			pagelist.map(function(menulink) {
-				router
-					.add('/' + menulink, function() {
-						// Space for functionality
-					});
-			});
-
-			router.add(function() {
-				// Space for functionality
-			});
-
-			router.check();
-
-			// Return to the initial state
-			// router.navigate();
-
-			router.navigate(pagelist[0]);
-
+		init: function(pagelist) {
 			router.show(pagelist[0]);
-		},
 
-		config: function(opts) {
-			this.mode = opts && opts.mode && opts.mode == 'history'	&& !!(history.pushState) ? 'history' : 'hash';
-			this.root = opts && opts.root ? '/' + this.clearSlashes(opts.root) + '/' : '/';
-			return this;
-		},
-
-		getSlug: function() {
-			var slug = '';
-			if (this.mode === 'history') {
-				slug = this.clearSlashes(decodeURI(location.pathname + location.search));
-				// Regex to remove 'GET' parameters
-				slug = slug.replace(/\?(.*)$/, '');
-				slug = this.root != '/' ? slug.replace(this.root, '') : slug;
-			} else {
-				var match = window.location.href.match(/#(.*)$/);
-				slug = match ? match[1] : '';
-			}
-			return this.clearSlashes(slug);
-		},
-
-		// Removes slashes of begin and end of string
-		clearSlashes: function(path) {
-			return path.toString().replace(/\$/, '').replace(/^\//, '');
-		},
-
-		// Fills the routes array
-		add: function(re, handler) {
-			if (typeof re == 'function') {
-				handler = re;
-				re = '';
-			}
-			this.routes.push({ re: re, handler: handler} );
-			return this;
-		},
-
-		// Deleting of a route can only happen it matches a regular expression or the handler passed to the 'add' method
-		remove: function(param) {
-			for (var i = 0, r; i < this.routes.length, r = this.routes[i]; i++) {
-				if (r.handler === param || r.re.toString() === param.toString()) {
-					this.routes.splice(i, 1);
-					return this;
-				}
-			}
-			return this;
-		},
-
-		// Clears the Class
-		flush: function(param) {
-			this.routes = [];
-			this.mode = null;
-			this.root = '/';
-			return this;
-		},
-
-		check: function(f) {
-			var slug = f || this.getSlug();
-			for (var i = 0; i < this.routes.length; i++) {
-				var match = slug.match(this.routes[i].re);
-				if (match) {
-					match.shift();
-					this.routes[i].handler.apply({}, match);
-					return this;
-				}
-			}
-			return this;
-		},
-
-		listen: function() {
-			var self = this;
-			var current = self.getSlug();
-			var fn = function() {
-				if (current !== self.getSlug()) {
-					current = self.getSlug();
-					self.check(current);
-				}
-			};
-			clearInterval(this.interval);
-			this.interval = setInterval(fn, 50);
-			return this;
+			window.addEventListener('hashchange', function() {
+				router.navigate(window.location.hash.replace('#', ''));
+			});
 		},
 
 		navigate: function(path) {
-			var navigation = utils.convertToArray(document.querySelectorAll('nav a'));
-			path = path ? path : '';
+			var menulinks = utils.convertToArray(document.querySelectorAll('nav a'));
 
-			if (this.mode === 'history') {
-				history.pushState(null, null, this.root + this.clearSlashes(path));
-			} else {
-				var hash = window.location.href.replace(/#(.*)$/, '') + '#' + path;
+			var hash = '#' + path;
+			window.location.href = hash;
 
-				window.location.href = hash;
-				router.pages.toggle(hash);
-			}
+			menulinks.map(function(anchor) {
+				// Retrieves the hash part of the entire anchor-link
+				var link = anchor.href.substr(anchor.href.indexOf('#'), anchor.href.length);
 
-			navigation.map(function(anchor) {
-				if (anchor.href === hash) {
+				if (link === hash) {
 					anchor.classList.add('current');
 				} else {
 					anchor.classList.remove('current');
 				}
 			});
 
-			this.show(this.clearSlashes(path));
-
-			return this;
+			this.show(path);
 		},
 
-		show: function(hash) {
-
+		show: function(path) {
 			var sectionList = utils.convertToArray(document.querySelectorAll('.content'));
 
 			sectionList.map(function(section) {
-				section.id === hash ? section.classList.remove('hidden') : section.classList.add('hidden');
+				if (section.id === path) {
+					section.classList.remove('hidden');
+				} else {
+					section.classList.add('hidden');
+				}
 			});
 		}
 	};
 
-	var menu = {
-		render: function(pagelist) {
-			var nav = document.querySelector('nav');
-			var ul = document.createElement('ul');
+	var renderMenu = function(pagelist) {
+		var nav = document.querySelector('nav');
+		var ul = document.createElement('ul');
 
-			pagelist.map(function(link) {
-				// Early exit to prevent details-page from being rendered in the navigation
-				if (link === 'detail') {
-					return false;
-				}
+		pagelist.map(function(link) {
+			// Early exit to prevent details-page from being rendered in the navigation
+			if (link === 'detail') {
+				return false;
+			}
 
-				var li = document.createElement('li');
-				var anchor = document.createElement('a');
+			var li = document.createElement('li');
+			var anchor = document.createElement('a');
 
-				anchor.href = '#' + link;
-				if (link === 'send') {
-					anchor.classList.add('current');
-				}
+			anchor.href = '#' + link;
+			if (link === 'send') {
+				anchor.classList.add('current');
+			}
 
-				anchor.textContent = link;
-				anchor.setAttribute('data-anchor', link);
+			anchor.textContent = link;
+			anchor.setAttribute('data-anchor', link);
 
-				li.append(anchor);
-				ul.append(li);
-				nav.append(ul);
-			});
-
-			// Shows which anchor is currently active
-			var anchors = utils.convertToArray(document.querySelectorAll('nav a'));
-
-			anchors.map(function(link) {
-
-				link.addEventListener('click', function() {
-					for (var i = 0; i < anchors.length; i++) {
-						anchors[i].classList.remove('current');
-					}
-					this.classList.add('current');
-
-					router.navigate(this.getAttribute('data-anchor'));
-				});
-			});
-		}
+			li.appendChild(anchor);
+			ul.appendChild(li);
+			nav.appendChild(ul);
+		});
 	};
 
 	// General functions
 	var utils = {
 		// Checks index of value in chosen array
-		checkArray: function(value, array) {
-			return array.indexOf(value);
+		checkArray: function(value, arr) {
+			return arr.indexOf(value);
 		},
 
 		// Converts nodelist to array
@@ -679,48 +579,4 @@
 
 	app.init();
 
-	// Checks on existing stories (doesn't work in app.init?)
-	if (localStorage.stories) {
-		// Splits stories-string in an array on every element
-		var savedStories = localStorage.getItem('stories').split('><');
-		var gifs;
-
-		// Removes 'No stories found' feedback and shows filter
-		story.exists(true);
-
-		// i'm not proud of it.
-		for (var i = 0; i < savedStories.length; i++) {
-			if (i == 0) {
-				savedStories[i] = savedStories[i] + '>';
-			} else if (i == savedStories.length - 1) {
-				savedStories[i] = '<' + savedStories[i];
-			} else {
-				savedStories[i] = '<' + savedStories[i] + '>';
-			}
-		}
-
-		// Reconstructs stories in the result list
-		savedStories.reduce(function(a, b) {
-			return dom.results.innerHTML = a + b;
-		});
-
-		// Adds functionality to every gif
-		gifs = utils.convertToArray(document.querySelectorAll('.gif'));
-		gifs.map(function(gif) {
-			gif.addEventListener('click', function() {
-				story.showDetails(gif.querySelector('.label').textContent);
-			});
-			gif.addEventListener('mouseover', function() {
-				story.showLink(gif.querySelector('img').src);
-			});
-		})
-
-		router.navigate('stories');
-
-		// Refreshes filter on entry
-		story.filter(false);
-	} else {
-		// Shows 'No stories found' feedback and hides filter
-		story.exists(false);
-	}
 }) ();
