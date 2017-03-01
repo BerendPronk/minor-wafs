@@ -18,11 +18,10 @@
 		init: function() {
 			template.render(app.pages);
 			router.init(app.pages);
-			renderMenu(app.pages);
-			app.cache();
+			app.checkCache();
 		},
 
-		cache: function() {
+		checkCache: function() {
 			// Checks on existing stories
 			if (localStorage.stories) {
 				// Splits stories-string in an array on every element
@@ -70,34 +69,6 @@
 		}
 	};
 
-	var request = function(settings) {
-		return new Promise(function(resolve, reject) {
-			var req = new XMLHttpRequest();
-
-			req.open(settings.type, settings.url);
-
-			req.addEventListener('load', function() {
-				if (this.status >= 200 && this.status < 400) {
-					resolve(this.responseText);
-				} else {
-					reject({
-						status: this.status,
-						statusText: this.statusText
-					});
-				}
-			});
-
-			req.addEventListener('error', function() {
-				reject({
-					status: this.status,
-					statusText: this.statusText
-				});
-			});
-
-			req.send();
-		});
-	};
-
 	var story = {
 		init: function(input) {
 			var dataSet = JSON.parse(input);
@@ -107,6 +78,34 @@
 
 		// Will store sequence of words/gifs
 		list: [],
+
+		request: function(settings) {
+			return new Promise(function(resolve, reject) {
+				var req = new XMLHttpRequest();
+
+				req.open(settings.type, settings.url);
+
+				req.addEventListener('load', function() {
+					if (this.status >= 200 && this.status < 400) {
+						resolve(this.responseText);
+					} else {
+						reject({
+							status: this.status,
+							statusText: this.statusText
+						});
+					}
+				});
+
+				req.addEventListener('error', function() {
+					reject({
+						status: this.status,
+						statusText: this.statusText
+					});
+				});
+
+				req.send();
+			});
+		},
 
 		exists: function(state) {
 			if (state) {
@@ -133,7 +132,7 @@
 			story.exists(true);
 
 			// Sends 'POST' request to the Paralleldots keyword API
-			request({
+			story.request({
 				type: 'POST',
 				url:  'http://apis.paralleldots.com/keywords?q=' + dom.input.value + '&apikey=pIklELbRNqSO5ZUZCp8LclScsAaRw3dcKCp67xRsnJI'
 			})
@@ -248,7 +247,7 @@
 				// Checks if word exists in the taglist
 				if (utils.checkArray(word, tagList) != -1) {
 					// Sends 'GET' request to the Giphy API
-					request({
+					story.request({
 						type: 'GET',
 						url:  'http://api.giphy.com/v1/gifs/search?q=' + word + '&api_key=dc6zaTOxFJmzC'
 					})
@@ -334,7 +333,7 @@
 			dom.synonymTitle.innerHTML = 'Found synonyms for <span class="tag">' + word + '</span>';
 
 			// Sends 'GET' reuest to Yandex Dictionary API
-			request({
+			story.request({
 				type: 'GET',
 				url: 'https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=dict.1.1.20170223T233030Z.71899a3fb947bc19.e4fcdcdd9ae99bf36ee480c684992b301afacc9f&lang=en-en&text=' + wordID
 			})
@@ -355,7 +354,7 @@
 									var tag = synWord.text;
 
 									// Sends 'GET' request to Gihpy API for each synonym
-									request({
+									story.request({
 										type: 'GET',
 										url:  'http://api.giphy.com/v1/gifs/search?q=' + tag + '&api_key=dc6zaTOxFJmzC'
 									})
@@ -471,10 +470,38 @@
 	// Routing
 	var router = {
 		init: function(pagelist) {
+			router.menu(pagelist);
 			router.show(pagelist[0]);
 
 			window.addEventListener('hashchange', function() {
 				router.navigate(window.location.hash.replace('#', ''));
+			});
+		},
+
+		menu: function(pagelist) {
+			var nav = document.querySelector('nav');
+			var ul = document.createElement('ul');
+
+			pagelist.map(function(link) {
+				// Early exit to prevent details-page from being rendered in the navigation
+				if (link === 'detail') {
+					return false;
+				}
+
+				var li = document.createElement('li');
+				var anchor = document.createElement('a');
+
+				anchor.href = '#' + link;
+				if (link === 'send') {
+					anchor.classList.add('current');
+				}
+
+				anchor.textContent = link;
+				anchor.setAttribute('data-anchor', link);
+
+				li.appendChild(anchor);
+				ul.appendChild(li);
+				nav.appendChild(ul);
 			});
 		},
 
@@ -509,33 +536,6 @@
 				}
 			});
 		}
-	};
-
-	var renderMenu = function(pagelist) {
-		var nav = document.querySelector('nav');
-		var ul = document.createElement('ul');
-
-		pagelist.map(function(link) {
-			// Early exit to prevent details-page from being rendered in the navigation
-			if (link === 'detail') {
-				return false;
-			}
-
-			var li = document.createElement('li');
-			var anchor = document.createElement('a');
-
-			anchor.href = '#' + link;
-			if (link === 'send') {
-				anchor.classList.add('current');
-			}
-
-			anchor.textContent = link;
-			anchor.setAttribute('data-anchor', link);
-
-			li.appendChild(anchor);
-			ul.appendChild(li);
-			nav.appendChild(ul);
-		});
 	};
 
 	// General functions
