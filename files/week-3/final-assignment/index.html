@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+
+	<title>WAFS - Week 2: Assignment 4</title>
+
+	<link href="https://fonts.googleapis.com/css?family=Abel|Montserrat:700" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+<body>
+
+	<header>
+		<h1>Stiphy</h1>
+		<h3>Stories supported by the Giphy API</h3>
+
+		<nav></nav>
+	</header>
+
+	<section id="send">
+
+		<p class="hint"></p>
+
+		<form id="search">
+			<textarea autofocus></textarea>
+
+			<input type="submit">
+		</form>
+
+		<div id="loader" class="hidden"></div>
+	</section>
+
+	<section id="stories">
+		<h2></h2>
+
+		<ul class="control">
+			<li id="sortStory">
+				<label for="sortStoryInput"></label>
+				<select id="sortStoryInput"></select>
+			</li>
+			<li id="sortGif">
+				<label for="sortGifInput"></label>
+				<select id="sortGifInput"></select>
+			</li>
+			<li id="filter">
+				<label>
+					<input type="checkbox"> <span></span>
+				</label>
+			</li>
+		</ul>
+
+		<p></p>
+
+		<ul id="results"></ul>
+	</section>
+
+	<section id="detail">
+		<h2></h2>
+		<ul id="synonyms"></ul>
+	</section>
+
+	<!-- Test stories: -->
+
+	<!-- As Trump evolved from real estate developer to reality television star, he turned his name into a brand. Licensed Trump products have included board games, steaks, cologne, vodka, furniture and menswear. -->
+
+	<!-- President Donald Trump reached for poetry and conjured a vision of common national purpose Tuesday during his first address to Congress -->
+
+	<!-- My name is Berend Pronk. I study Communication and Multimedia Design in Amsterdam. That's the capital of The Netherlands -->
+
+	<div id="feedback"></div>
+
+	<script src="assets/js/app.js"></script>
+</body>
+</html>
