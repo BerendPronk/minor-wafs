@@ -35,3 +35,10 @@ https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-3
 
 ***Assignment 4***  
 https://github.com/BerendPronk/minor-wafs/tree/master/files/week-2/assignment-4
+
+---
+
+##Week3
+
+***Final Assignment***  
+https://github.com/BerendPronk/minor-wafs/tree/master/files/week-3/final-assignment
