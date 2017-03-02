@@ -327,7 +327,6 @@ form [type="submit"] {
 	font-weight: bold;
 	color: #191919;
 	border-radius: .5em 0 0 .5em;
-	background-color: #fff;
 	box-shadow: 0em 0.25em 0.25em rgba(0,0,0,.25);
 	transform: translateX(100%);
 	transition: .2s ease;
