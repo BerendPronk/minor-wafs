@@ -3,8 +3,10 @@
 		input: document.querySelector('#search textarea'),
 		submit: document.querySelector('#search input[type="submit"]'),
 		loader: document.querySelector('#loader'),
-		filter: document.querySelector('#filter'),
-		filterInput: document.querySelector('#filter [type="checkbox"]'),
+		control: document.querySelector('.control'),
+		sortStory: document.querySelector('.control #sortStoryInput'),
+		sortGif: document.querySelector('.control #sortGifInput'),
+		filter: document.querySelector('.control #filter [type="checkbox"]'),
 		storiesSubtitle: document.querySelector('#stories p'),
 		results: document.querySelector('#results'),
 		feedback: document.querySelector('#feedback'),
@@ -60,9 +62,11 @@
 
 				router.navigate('stories');
 
-				// Refreshes filter on entry
-				story.filter(false);
+				// Refreshes controls on entry
+				utils.resetControls();
 			} else {
+				router.navigate('send');
+
 				// Shows 'No stories found' feedback and hides filter
 				story.exists(false);
 			}
@@ -70,14 +74,14 @@
 	};
 
 	var story = {
-		init: function(input) {
+		// Will store sequence of words/gifs
+		list: [],
+
+		parse: function(input) {
 			var dataSet = JSON.parse(input);
 
 			return dataSet.data;
 		},
-
-		// Will store sequence of words/gifs
-		list: [],
 
 		request: function(settings) {
 			return new Promise(function(resolve, reject) {
@@ -109,10 +113,10 @@
 
 		exists: function(state) {
 			if (state) {
-				dom.filter.classList.remove('hidden');
+				dom.control.classList.remove('hidden');
 				dom.storiesSubtitle.textContent = '';
 			} else {
-				dom.filter.classList.add('hidden');
+				dom.control.classList.add('hidden');
 				dom.storiesSubtitle.textContent = 'No stories found';
 			}
 		},
@@ -217,8 +221,9 @@
 						utils.resetInput();
 						story.list = [];
 
-						// Refreshes filter on entry
-						story.filter(false);
+						// Refreshes controls on entry
+						utils.resetControls();
+
 					}, 1000);
 				})
 				.catch(function(err) {
@@ -252,13 +257,19 @@
 						url:  'http://api.giphy.com/v1/gifs/search?q=' + word + '&api_key=dc6zaTOxFJmzC'
 					})
 						.then(function(rawGiphy) {
-							var data = story.init(rawGiphy);
+							var data = story.parse(rawGiphy);
 							var rand = Math.floor(Math.random() * data.length);
 							var newLi = document.createElement('li');
 
+							// retrieves medium-sized image
+							var img = data[rand].images.downsized_medium.url;
+
 							newLi.setAttribute('data-index', utils.checkArray(word, storyTextArr));
-							newLi.innerHTML = '<img src="http://i.giphy.com/' + data[rand].id + '.gif">' + '<span class="label">' + word + '</span>';
+							newLi.setAttribute('data-creationdate', data[rand].import_datetime);
+							newLi.insertAdjacentHTML('afterbegin', '<img src="' + img + '">' + '<span class="label">' + word + '</span>');
 							newLi.classList.add('gif');
+
+							// Adds functionality to image
 							newLi.addEventListener('click', function() {
 								story.showDetails(word);
 							});
@@ -290,6 +301,9 @@
 			var stories = utils.convertToArray(dom.results.querySelectorAll(':scope > li'));
 
 			if (this.checked || state === true) {
+				// Checks the filter checkbox
+				dom.filter.checked = true;
+
 				stories.map(function(story) {
 					var elements = utils.convertToArray(story.querySelectorAll('li'));
 
@@ -309,6 +323,14 @@
 					});
 				});
 			} else {
+				// Checks if gif sorter is checked and refreshes page
+				if (dom.sortGif.selectedIndex !== 0) {
+					location.reload();
+				}
+
+				// Unchecks the filter checkbox and resets input of the gif sorter
+				dom.filter.checked = false;
+
 				stories.map(function(story) {
 					var elements = utils.convertToArray(story.querySelectorAll('li'));
 
@@ -320,17 +342,107 @@
 			}
 		},
 
+		sort: {
+			story: function(type) {
+				// Stores immediate children (single stories) of results in array
+				var stories = utils.convertToArray(dom.results.querySelectorAll(':scope > li ul'));
+
+				// Sorts based on input value
+				stories.sort(function(a, b) {
+					switch (type) {
+						case 'Shortest':
+							return a.childElementCount > b.childElementCount;
+						break;
+						case 'Longest':
+							return a.childElementCount < b.childElementCount;
+						break;
+					}
+				});
+
+				// Clears result list
+				utils.clearList(dom.results);
+
+				// Adds rearranged stories in result list
+				stories.map(function(story) {
+					var newStory = document.createElement('li');
+
+					newStory.appendChild(story);
+					dom.results.appendChild(newStory);
+				});
+
+				// Provides user with feedback
+				utils.feedback(type + ' stories are displayed on top!', 'positive');
+			},
+			gif: function(type) {
+				// Stores immediate children (single stories) of results in array
+				var stories = utils.convertToArray(dom.results.querySelectorAll(':scope > li ul'));
+				var storyElements = utils.convertToArray(dom.results.querySelectorAll('li'));
+
+				// Will store description of sorting type
+				var desc;
+
+				// Checks the filter checkbox
+				story.filter(true);
+
+				// Clears result list
+				utils.clearList(dom.results);
+
+				// Adds rearranged stories in result list
+				stories.map(function(story) {
+					var gifs = utils.convertToArray(story.querySelectorAll('.gif'));
+					var newStory = document.createElement('li');
+					var newStoryList = document.createElement('ul');
+
+					gifs.sort(function(a, b) {
+						// Get keywords (case-insensitive)
+						var aKeyword = a.querySelector('span').innerText.toLowerCase();
+						var bKeyword = b.querySelector('span').innerText.toLowerCase();
+
+						// Get upload dates
+						var aDate = a.getAttribute('data-creationdate');
+						var bDate = b.getAttribute('data-creationdate');
+
+						switch (type) {
+							case 'A-Z':
+								desc = 'Alphabetical';
+								return aKeyword > bKeyword;
+							break;
+							case 'Z-A':
+								desc = 'Reversed alphabetical';
+								return aKeyword < bKeyword;
+							break;
+							case 'Newest':
+								desc = 'Newest first';
+								return aDate < bDate;
+							break;
+							case 'Oldest':
+								desc = 'Oldest first';
+								return aDate > bDate;
+							break;
+						}
+					});
+
+					gifs.map(function(gif) {
+						newStoryList.appendChild(gif);
+						newStory.appendChild(newStoryList);
+					})
+
+					dom.results.appendChild(newStory);
+				});
+
+				utils.feedback(desc + ' sort was succesful!', 'positive');
+			}
+		},
+
 		showDetails: function(word) {
 			var wordID = word.toLowerCase();
 
 			// Clears synonym results before making a new request
 			utils.clearList(dom.synonyms);
 
-			// Navigates to the stories section
-			router.navigate('detail');
-
-			// Updates title based on selected word
-			dom.synonymTitle.innerHTML = 'Found synonyms for <span class="tag">' + word + '</span>';
+			// Updates title based on selected word, clears it first
+			dom.synonymTitle.innerHTML = '';
+			dom.synonymTitle.insertAdjacentHTML('afterbegin', 'Found synonyms for <span class="tag">' + word + '</span>');
 
 			// Sends 'GET' reuest to Yandex Dictionary API
 			story.request({
@@ -359,16 +471,20 @@
 										url:  'http://api.giphy.com/v1/gifs/search?q=' + tag + '&api_key=dc6zaTOxFJmzC'
 									})
 										.then(function(rawGiphy) {
-											var data = story.init(rawGiphy);
+											var data = story.parse(rawGiphy);
 											var randGif = Math.floor(Math.random() * data.length);
 											var randColor = Math.floor(Math.random() * 5);
 											var newLi = document.createElement('li');
 
+											var img = data[randGif].images.downsized_medium.url;
+
 											// Randomize background-color of labels
 											var colors = ['0, 255, 153', '255, 243, 92', '255, 102, 102', '0, 204, 255', '125, 127, 232'];
 
-											newLi.innerHTML = '<img src="http://i.giphy.com/' + data[randGif].id + '.gif">' + '<span class="label" style="background-color:rgba(' + colors[randColor] + ', .5)">' + tag + '</span>';
+											newLi.insertAdjacentHTML('afterbegin', '<img src="' + img + '">' + '<span class="label" style="background-color:rgba(' + colors[randColor] + ', .5)">' + tag + '</span>');
 											newLi.classList.add('gif');
+
+											// Addds functionality to image
 											newLi.addEventListener('click', function() {
 												story.showDetails(tag)
 											});
@@ -398,7 +514,11 @@
 								utils.feedback('Found (at least) ' + synonymCount + ' synonyms!', 'positive');
 							}
 						}, 1000);
+
 					}
+
+					// Navigates to the synonyms section
+					router.navigate('detail');
 				})
 				.catch(function(err) {
 					console.error('Unfortunately, and error occurred: ', err);
@@ -429,7 +549,11 @@
 			{
 				template: 'stories',
 				title: 'My stories',
-				label: 'Only Giphy\'s',
+				sortStoryLabel: 'Sort Stories',
+				sortStoryOpts: ['Select an option', 'Shortest', 'Longest'],
+				sortGifLabel: 'Sort Giphy\'s',
+				sortGifOpts: ['Select an option', 'A-Z', 'Z-A', 'Newest', 'Oldest'],
+				filterLabel: 'Only Giphy\'s'
 			},
 			{
 				template: 'detail',
@@ -449,14 +573,59 @@
 						section.querySelector('[type="submit"]').value = page.submit;
 						section.querySelector('#loader').textContent = page.loader;
 
+						// Adds functionality to elements
 						dom.submit.addEventListener('click', story.search);
 					break;
 
 					case 'stories':
 						section.querySelector('h2').textContent = page.title;
-						section.querySelector('label span').textContent = page.label;
+						section.querySelector('#filter span').textContent = page.filterLabel;
 
-						dom.filterInput.addEventListener('change', story.filter);
+						section.querySelector('#sortStory label').textContent = page.sortStoryLabel;
+						// Creates options for every sorting possibility
+						page.sortStoryOpts.map(function(option, index) {
+							var storyOpt = document.createElement('option');
+
+							// Set placeholder for first result
+							if (index === 0) {
+								storyOpt.disabled = true;
+								storyOpt.selected = true;
+								storyOpt.hidden = true;
+							}
+
+							storyOpt.value = option;
+							storyOpt.textContent = option;
+
+							section.querySelector('#sortStoryInput').appendChild(storyOpt);
+						});
+
+						section.querySelector('#sortGif label').textContent = page.sortGifLabel;
+						// Creates options for every sorting possibility
+						page.sortGifOpts.map(function(option, index) {
+							var gifOpt = document.createElement('option');
+
+							// Set placeholder for first result
+							if (index === 0) {
+								gifOpt.disabled = true;
+								gifOpt.selected = true;
+								gifOpt.hidden = true;
+							}
+
+							gifOpt.value = option;
+							gifOpt.textContent = option;
+
+							section.querySelector('#sortGifInput').appendChild(gifOpt);
+						});
+
+						// Adds functionality to elements
+						dom.sortStory.addEventListener('change', function() {
+							story.sort.story(this.value);
+						});
+						dom.sortGif.addEventListener('change', function() {
+							story.sort.gif(this.value);
+						});
+
+						dom.filter.addEventListener('change', story.filter);
 					break;
 
 					case 'detail':
@@ -483,13 +652,13 @@
 			var ul = document.createElement('ul');
 
 			pagelist.map(function(link) {
+				var li = document.createElement('li');
+				var anchor = document.createElement('a');
+
 				// Early exit to prevent details-page from being rendered in the navigation
 				if (link === 'detail') {
 					return false;
 				}
-
-				var li = document.createElement('li');
-				var anchor = document.createElement('a');
 
 				anchor.href = '#' + link;
 				if (link === 'send') {
@@ -509,7 +678,11 @@
 			var menulinks = utils.convertToArray(document.querySelectorAll('nav a'));
 
 			var hash = '#' + path;
-			window.location.href = hash;
+			window.location.hash = path;
+
+			if (path === 'send') {
+				// window.location.hash = 'send'
+			}
 
 			menulinks.map(function(anchor) {
 				// Retrieves the hash part of the entire anchor-link
@@ -563,8 +736,14 @@
 			dom.input.value = '';
 		},
 
+		resetControls: function() {
+			story.filter(false);
+			dom.sortStory.selectedIndex = '0';
+			dom.sortGif.selectedIndex = '0';
+		},
+
 		feedback: function(msg, state) {
-			dom.feedback.innerHTML = msg;
+			dom.feedback.innerText = msg;
 
 			dom.feedback.classList.add('active');
 			dom.feedback.classList.add(state);
