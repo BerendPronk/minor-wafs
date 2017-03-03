@@ -6,7 +6,7 @@ Enter your story in the textarea, make sure it's writting down in correct Englis
 
 You'll be presented with your own story, but some of the words will be replaced by random gif-images from the amazing Giphy API (https://api.giphy.com/). If you are willing to explore more randomized images, you can! Click on a gif-image from your story and receive a new set of images based on the synonyms of the chosen word. Those new images are clickable as well, so you can infinitely loop through the funny animated images the web has to offer!
 
-View [demo](https://berendpronk.github.io/minor/wafs/files/week-3/final-assignment/)
+View [demo](https://berendpronk.github.io/minor/wafs/files/week-3/final-assignment/).
 
 ###Usage
 **1:** Think of a story you would like to see converted into a random gibberish of animated images.  
