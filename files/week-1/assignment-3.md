@@ -1,9 +1,9 @@
 ### Assignment 3
 07-02-2017
 
-###The pro's and con's of Single Page Applications###
+### The pro's and con's of Single Page Applications###
 ---
-####Pro's
+#### Pro's
 ***Single-page applications are fast***  
 The only thing that updates, is the data. The HTML, CSS, Javascript, et cetera, never changes. This means that those files do not have to be requested to the server again.
 
@@ -22,7 +22,7 @@ Single-page applications make it easier to build web-experiences that resemble n
 
 ---
 
-####Con's
+#### Con's
 ***Single-page applications tend to be slower on the landing***  
 Because the single-page needs to gather all the necessary files of the used framework, the pageload time will increase.
 
