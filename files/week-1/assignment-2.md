@@ -1,9 +1,9 @@
 ## Assignment 2  
 07-02-2017
 
-###The pro's and con's of libraries / frameworks###
+### The pro's and con's of libraries / frameworks
 ---
-###Pro's
+### Pro's
 ***A lot of functionality / features***  
 Libraries and frameworks are built with this in mind: To help the developer code a project with a lot of pre-built functionalities. Every library / framework has their own features, so developers can pick one they think is best for their project.
 
@@ -25,7 +25,7 @@ Each library / framwork uses it's own syntax. When you are learning a new librar
 
 ---
 
-####Con's
+#### Con's
 ***The learning curve could be steep***  
 Because JavaScript frameworks carry a lot of functionality with them; getting used to the specific framework could be very difficult.
 
