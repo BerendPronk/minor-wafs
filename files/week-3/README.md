@@ -1,5 +1,5 @@
-#Stiphy  
-##Stories supported by the Giphy API
+# Stiphy  
+## Stories supported by the Giphy API
 
 Everyone has a story to tell. An term that's often mentioned is: 'Show, don't tell'. Stiphy works exactly with that in mind.  
 Enter your story in the textarea, make sure it's writting down in correct English, and press on 'Submit' once you're done.
@@ -8,7 +8,7 @@ You'll be presented with your own story, but some of the words will be replaced 
 
 View [demo](https://berendpronk.github.io/minor/wafs/files/week-3/final-assignment/).
 
-###Usage
+### Usage
 **1:** Think of a story you would like to see converted into a random gibberish of animated images.  
 **2:** Enter your chosen story into the textarea.  
 **3:** Click the 'Submit' button and wait till the Parallel Dots API finishes retrieving keywords from your input.  
@@ -20,7 +20,7 @@ View [demo](https://berendpronk.github.io/minor/wafs/files/week-3/final-assignme
 
 You now know how to use Stiphy. Share if you would liek others to experience the same you just did.
 
-###So how does it all work? (in a nutshell)
+### So how does it all work? (in a nutshell)
 Every time a user submits an input in the 'send' section of the single-page application, a POST request is made to the Parallel Dots API (https://www.paralleldots.com/), in order to find certain keywords in the submitted story.  
 
 The entire story will be stored inside of a array, which'll later be rendered as an unordered list with a list-item for every word. The keywords will be replaced with animated images from Giphy before that happens, however. This is done via a GET request.
@@ -30,7 +30,7 @@ When a user clicks a gif-image, a GET request will be made to the Yandex Diction
 
 Every story, with gif-images included, are saved in the localstorage of the users browser. This way the user will not lose the stories if a accidental refresh is made, or if the user decided to revisit the application to take a look at his or her stories once more.
 
-###Feature wishlist
+### Feature wishlist
 This application is not done yet. There are a few features I would like to include:
 - A way to choose between multiple gif-images for each keyword.
 - Retrieving the entire stories as images, for users to download / print.
@@ -38,13 +38,13 @@ This application is not done yet. There are a few features I would like to inclu
 
 Besides these items, I think it would be nice to refactor the script the application uses, once more. By doing so, I'll be able to learn more about the structure, and possibly be able to write it in a neater package.
 
-###Object Method Diagram
-![Object Method Diagram](https://berendpronk.github.io/minor/assets/object-method-diagram.jpg)
+### Object Method Diagram
+![Object Method Diagram](https://berendpronk.github.io/minor/assets/wafs/object-method-diagram.jpg)
 
-###Flowchart
-![Flowchart](https://berendpronk.github.io/minor/assets/flowchart.jpg)
+### Flowchart
+![Flowchart](https://berendpronk.github.io/minor/assets/wafs/flowchart.jpg)
 
-###About
+### About
 I learned about the possibilities of Giphy while using Slack during one of my internships. When I got the opportunity to build a single-page application that needed to include an API, I almost immediatly thought of using the Giphy API. It was a nice first case for me to experiment with the functionalities and uses of different third-party API's.
 
 ---
